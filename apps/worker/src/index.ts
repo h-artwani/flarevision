@@ -1,0 +1,26 @@
+import { NativeConnection, Worker } from "@temporalio/worker";
+import * as activities from "./activities";
+
+const TASK_QUEUE = "flarevision-analysis";
+
+async function main() {
+  const connection = await NativeConnection.connect({
+    address: process.env.TEMPORAL_ADDRESS ?? "localhost:7233",
+  });
+
+  const worker = await Worker.create({
+    connection,
+    namespace: "default",
+    taskQueue: TASK_QUEUE,
+    workflowsPath: require.resolve("./workflows"),
+    activities,
+  });
+
+  console.log(`Worker started on task queue: ${TASK_QUEUE}`);
+  await worker.run();
+}
+
+main().catch((err) => {
+  console.error("Worker failed:", err);
+  process.exit(1);
+});
