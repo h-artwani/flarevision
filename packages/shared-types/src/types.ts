@@ -5,7 +5,7 @@ import {
   LogAnalysisResultSchema,
   DeployCorrelationResultSchema,
   RCAReportSchema,
-} from "./schemas";
+} from "./schemas.js";
 
 export type AlertPayload = z.infer<typeof AlertPayloadSchema>;
 export type TriageResult = z.infer<typeof TriageResultSchema>;
