@@ -67,6 +67,6 @@ npm run type-check
 ## Temporal
 
 The worker connects to a local Temporal server on `localhost:7233` by default.
-Task queue: `flarevision-analysis`
+Task queue: `flarevision-incidents`
 
-Workflow: `analyzeVideoWorkflow` — accepts an `AnalysisRequest`, calls Claude to detect fire/smoke, returns an `AnalysisResult`.
+Workflow: `rcaWorkflow` — accepts an `AlertPayload`, runs triage, log analysis, and deploy correlation activities in parallel, returns an `RCAReport`.

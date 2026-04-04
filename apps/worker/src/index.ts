@@ -1,7 +1,7 @@
 import { NativeConnection, Worker } from "@temporalio/worker";
 import * as activities from "./activities";
 
-const TASK_QUEUE = "flarevision-analysis";
+const TASK_QUEUE = "flarevision-incidents";
 
 async function main() {
   const connection = await NativeConnection.connect({

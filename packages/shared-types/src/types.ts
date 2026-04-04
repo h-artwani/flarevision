@@ -1,9 +1,14 @@
-import { z } from "zod";
-import { AnalysisRequestSchema, AnalysisResultSchema } from "./schemas";
+import type { z } from "zod";
+import {
+  AlertPayloadSchema,
+  TriageResultSchema,
+  LogAnalysisResultSchema,
+  DeployCorrelationResultSchema,
+  RCAReportSchema,
+} from "./schemas";
 
-export type AnalysisRequest = z.infer<typeof AnalysisRequestSchema>;
-export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
-
-export type Detection = AnalysisResult["detections"][number];
-export type DetectionType = Detection["type"];
-export type AnalysisStatus = AnalysisResult["status"];
+export type AlertPayload = z.infer<typeof AlertPayloadSchema>;
+export type TriageResult = z.infer<typeof TriageResultSchema>;
+export type LogAnalysisResult = z.infer<typeof LogAnalysisResultSchema>;
+export type DeployCorrelationResult = z.infer<typeof DeployCorrelationResultSchema>;
+export type RCAReport = z.infer<typeof RCAReportSchema>;

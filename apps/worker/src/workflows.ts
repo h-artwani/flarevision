@@ -1,32 +1,37 @@
-import { proxyActivities, defineSignal, setHandler, condition } from "@temporalio/workflow";
+import { proxyActivities, defineSignal, setHandler } from "@temporalio/workflow";
 import type * as activities from "./activities";
-import type { AnalysisRequest, AnalysisResult } from "@flarevision/shared-types";
+import type { AlertPayload, RCAReport } from "@flarevision/shared-types";
 
-const { analyzeVideoActivity } = proxyActivities<typeof activities>({
-  startToCloseTimeout: "10 minutes",
-  retry: {
-    maximumAttempts: 3,
-  },
-});
+const { triageAlertActivity, analyzeLogsActivity, correlateDeployActivity, generateRCAActivity } =
+  proxyActivities<typeof activities>({
+    startToCloseTimeout: "10 minutes",
+    retry: {
+      maximumAttempts: 3,
+    },
+  });
 
 export const cancelSignal = defineSignal("cancel");
 
-export async function analyzeVideoWorkflow(request: AnalysisRequest): Promise<AnalysisResult> {
+const earlyExitRCA: RCAReport = {
+  rootCause: "Workflow cancelled before completion",
+  timeline: [],
+  recommendedFix: "",
+  preventiveActions: [],
+};
+
+export async function rcaWorkflow(alert: AlertPayload): Promise<RCAReport> {
   let cancelled = false;
   setHandler(cancelSignal, () => {
     cancelled = true;
   });
 
-  if (cancelled) {
-    return {
-      id: crypto.randomUUID(),
-      requestId: request.id,
-      status: "failed",
-      detections: [],
-      error: "Workflow cancelled before start",
-    };
-  }
+  const [triage, logAnalysis, deployCorrelation] = await Promise.all([
+    triageAlertActivity(alert),
+    analyzeLogsActivity(alert.incidentId),
+    correlateDeployActivity(alert.service, alert.triggeredAt),
+  ]);
 
-  const result = await analyzeVideoActivity(request);
-  return result;
+  if (cancelled) return earlyExitRCA;
+
+  return generateRCAActivity(triage, logAnalysis, deployCorrelation);
 }
