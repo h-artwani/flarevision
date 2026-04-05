@@ -12,6 +12,14 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+function extractJSON(text: string): string {
+  return text
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```\s*$/i, "")
+    .trim();
+}
+
 export async function triageAlertActivity(alert: AlertPayload): Promise<TriageResult> {
   const message = await anthropic.messages.create({
     model: "claude-opus-4-6",
@@ -19,7 +27,7 @@ export async function triageAlertActivity(alert: AlertPayload): Promise<TriageRe
     messages: [
       {
         role: "user",
-        content: `Triage the following production alert and respond with JSON only.
+        content: `Triage the following production alert. Respond with raw JSON only. No markdown, no code blocks, no explanation.
 
 Alert:
 - Incident ID: ${alert.incidentId}
@@ -42,7 +50,7 @@ Return JSON matching this shape exactly:
 
   const content = message.content[0];
   if (content.type !== "text") throw new Error("Unexpected response type from Claude");
-  return JSON.parse(content.text) as TriageResult;
+  return JSON.parse(extractJSON(content.text)) as TriageResult;
 }
 
 export async function analyzeLogsActivity(incidentId: string): Promise<LogAnalysisResult> {
@@ -52,7 +60,7 @@ export async function analyzeLogsActivity(incidentId: string): Promise<LogAnalys
     messages: [
       {
         role: "user",
-        content: `Analyze logs for incident ${incidentId} and return JSON only.
+        content: `Analyze logs for incident ${incidentId}. Respond with raw JSON only. No markdown, no code blocks, no explanation.
 
 Return JSON matching this shape exactly:
 {
@@ -67,7 +75,7 @@ Return JSON matching this shape exactly:
 
   const content = message.content[0];
   if (content.type !== "text") throw new Error("Unexpected response type from Claude");
-  return JSON.parse(content.text) as LogAnalysisResult;
+  return JSON.parse(extractJSON(content.text)) as LogAnalysisResult;
 }
 
 export async function correlateDeployActivity(
@@ -80,7 +88,7 @@ export async function correlateDeployActivity(
     messages: [
       {
         role: "user",
-        content: `Check recent deploys for service "${service}" around ${triggeredAt} and return JSON only.
+        content: `Check recent deploys for service "${service}" around ${triggeredAt}. Respond with raw JSON only. No markdown, no code blocks, no explanation.
 
 Return JSON matching this shape exactly:
 {
@@ -96,7 +104,7 @@ Return JSON matching this shape exactly:
 
   const content = message.content[0];
   if (content.type !== "text") throw new Error("Unexpected response type from Claude");
-  return JSON.parse(content.text) as DeployCorrelationResult;
+  return JSON.parse(extractJSON(content.text)) as DeployCorrelationResult;
 }
 
 export async function generateRCAActivity(
@@ -110,7 +118,7 @@ export async function generateRCAActivity(
     messages: [
       {
         role: "user",
-        content: `You are an SRE. Synthesize the following investigation results into a complete root cause analysis report. Respond with JSON only.
+        content: `You are an SRE. Synthesize the following investigation results into a complete root cause analysis report. Respond with raw JSON only. No markdown, no code blocks, no explanation.
 
 Triage:
 ${JSON.stringify(triage, null, 2)}
@@ -134,5 +142,5 @@ Return JSON matching this shape exactly:
 
   const content = message.content[0];
   if (content.type !== "text") throw new Error("Unexpected response type from Claude");
-  return RCAReportSchema.parse(JSON.parse(content.text));
+  return RCAReportSchema.parse(JSON.parse(extractJSON(content.text)));
 }

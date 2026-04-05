@@ -8,6 +8,7 @@
     "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "start": "node dist/index.js",
+    "test:workflow": "ts-node src/test-workflow.ts",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
@@ -17,7 +18,8 @@
     "@temporalio/activity": "^1.10.4",
     "@temporalio/client": "^1.10.4",
     "@temporalio/worker": "^1.10.4",
-    "@temporalio/workflow": "^1.10.4"
+    "@temporalio/workflow": "^1.10.4",
+    "dotenv": "^17.4.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
