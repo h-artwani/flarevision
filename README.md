@@ -18,6 +18,12 @@ No runbooks. No 3am log spelunking. Just answers.
 
 ---
 
+## Demo
+
+https://github.com/h-artwani/flarevision/blob/main/flarevision-demo.mov
+
+---
+
 ## 🏗️ Architecture
 
 ```
