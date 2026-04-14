@@ -127,9 +127,9 @@ The Temporal UI at `localhost:8233` shows the full execution history, activity i
 - [x] Shared Zod schemas and TypeScript types
 - [x] 4 Claude AI agents with validated structured outputs
 - [x] End-to-end Temporal workflow running locally
-- [ ] Next.js API routes
-- [ ] React dashboard with live workflow visualizer
-- [ ] Deployment to Temporal Cloud + Vercel + Fly.io
+- [x] Next.js API routes
+- [x] React dashboard with live workflow visualizer
+- [x] Deployment to Temporal Cloud + Vercel + Fly.io
 
 ---
 
