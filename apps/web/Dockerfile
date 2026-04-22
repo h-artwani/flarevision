@@ -1,0 +1,29 @@
+FROM node:20-slim
+
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy root manifest and all workspace package manifests separately so
+# Docker can cache the install layer independently of source changes
+COPY package.json package-lock.json ./
+COPY packages/shared-types/package.json packages/shared-types/
+COPY apps/web/package.json apps/web/
+
+# Install all workspace dependencies
+RUN npm ci
+
+# Copy all source files
+COPY tsconfig.json ./
+COPY packages/shared-types/ packages/shared-types/
+COPY apps/web/ apps/web/
+
+# Build shared-types first — web imports from it at compile time
+RUN npm run build -w @flarevision/shared-types
+
+# Build the Next.js app (standalone output configured in next.config.ts)
+RUN npm run build -w @flarevision/web
+
+EXPOSE 3000
+
+CMD ["node", "apps/web/.next/standalone/server.js"]
