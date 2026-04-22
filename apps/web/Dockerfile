@@ -22,4 +22,4 @@ RUN ls -la apps/web/.next/ && echo "---" && cat apps/web/next.config.ts
 
 EXPOSE 3000
 
-CMD ["node", "apps/web/.next/standalone/server.js"]
+CMD ["sh", "-c", "ls -la /app/apps/web/.next/ && ls -la /app/apps/web/.next/standalone 2>/dev/null || echo 'NO STANDALONE FOLDER' && node /app/apps/web/.next/standalone/server.js"]
