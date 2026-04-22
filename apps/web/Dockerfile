@@ -1,25 +1,31 @@
-FROM node:20-slim
+# ── Stage 1: Build ───────────────────────────────────────────────────────────
+FROM node:20-slim AS builder
 
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy the entire monorepo so npm workspace resolution works correctly
 COPY . .
 
-# Install all workspace dependencies
 RUN npm ci
 
-# Build shared-types first — web imports from it at compile time
 RUN npm run build -w @flarevision/shared-types
 
-# Build the Next.js app from its own directory so Next.js picks up
-# next.config.ts correctly and generates .next/standalone output
 RUN cd apps/web && npm run build
 
-# Debug: verify standalone output and confirm next.config.ts was picked up
-RUN ls -la apps/web/.next/ && echo "---" && cat apps/web/next.config.ts
+RUN ls -la /app/apps/web/.next/standalone/
+
+# ── Stage 2: Run ─────────────────────────────────────────────────────────────
+FROM node:20-slim AS runner
+
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=builder /app/apps/web/.next/standalone ./
+COPY --from=builder /app/apps/web/.next/static ./.next/static
+COPY --from=builder /app/apps/web/public ./public
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "echo 'Starting...' && ls -la /app/apps/web/.next/ && node /app/apps/web/.next/standalone/server.js 2>/dev/null || echo 'standalone not found, listing .next:' && ls -la /app/apps/web/.next/"]
+CMD ["node", "server.js"]
