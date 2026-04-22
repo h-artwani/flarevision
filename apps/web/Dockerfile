@@ -17,8 +17,8 @@ RUN npm run build -w @flarevision/shared-types
 # next.config.ts correctly and generates .next/standalone output
 RUN cd apps/web && npm run build
 
-# Verify standalone output was generated
-RUN ls -la apps/web/.next/
+# Debug: verify standalone output and confirm next.config.ts was picked up
+RUN ls -la apps/web/.next/ && echo "---" && cat apps/web/next.config.ts
 
 EXPOSE 3000
 
