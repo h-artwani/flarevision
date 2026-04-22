@@ -24,6 +24,7 @@ WORKDIR /app
 
 COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./.next/static
+COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 EXPOSE 3000
 
 CMD ["node", "server.js"]
