@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20-slim
 WORKDIR /app
 
 # Copy root manifest and all workspace package manifests separately so
