@@ -5,13 +5,22 @@ import * as activities from "./activities";
 const TASK_QUEUE = "flarevision-incidents";
 
 async function main() {
-  const connection = await NativeConnection.connect({
-    address: process.env.TEMPORAL_ADDRESS ?? "localhost:7233",
-  });
+  const isCloud = !!process.env.TEMPORAL_API_KEY;
+
+  const connection = await NativeConnection.connect(
+    isCloud
+      ? {
+          address: process.env.TEMPORAL_ADDRESS!,
+          tls: true,
+          metadata: { "temporal-namespace": process.env.TEMPORAL_NAMESPACE! },
+          apiKey: process.env.TEMPORAL_API_KEY!,
+        }
+      : { address: "localhost:7233" }
+  );
 
   const worker = await Worker.create({
     connection,
-    namespace: "default",
+    namespace: process.env.TEMPORAL_NAMESPACE ?? "default",
     taskQueue: TASK_QUEUE,
     workflowsPath: require.resolve("./workflows"),
     activities,
