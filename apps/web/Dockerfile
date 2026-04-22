@@ -13,8 +13,12 @@ RUN npm ci
 # Build shared-types first — web imports from it at compile time
 RUN npm run build -w @flarevision/shared-types
 
-# Build the Next.js app (standalone output configured in next.config.ts)
-RUN npm run build -w @flarevision/web
+# Build the Next.js app from its own directory so Next.js picks up
+# next.config.ts correctly and generates .next/standalone output
+RUN cd apps/web && npm run build
+
+# Verify standalone output was generated
+RUN ls -la apps/web/.next/
 
 EXPOSE 3000
 
