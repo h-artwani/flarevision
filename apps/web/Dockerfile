@@ -13,8 +13,6 @@ RUN npm run build -w @flarevision/shared-types
 
 RUN cd apps/web && npm run build
 
-RUN ls -la /app/apps/web/.next/standalone/
-
 # ── Stage 2: Run ─────────────────────────────────────────────────────────────
 FROM node:20-slim AS runner
 

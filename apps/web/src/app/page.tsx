@@ -105,6 +105,65 @@ function StatusBadge({ status }: { status: IncidentStatus }) {
   );
 }
 
+// ─── IncidentCard (mobile) ────────────────────────────────────────────────────
+
+function IncidentCard({
+  inc,
+  isSelected,
+  now,
+  onClick,
+}: {
+  inc: Incident;
+  isSelected: boolean;
+  now: number;
+  onClick?: () => void;
+}) {
+  const isClickable = inc.status === "completed" && !!inc.result;
+  return (
+    <div
+      onClick={isClickable ? onClick : undefined}
+      className={[
+        "animate-fade-in rounded-lg border p-4 transition-colors duration-150",
+        inc.status === "running"
+          ? "border-amber-500/20 bg-amber-500/[0.04]"
+          : "border-slate-700/60 bg-slate-800/50",
+        isSelected ? "border-slate-500 bg-slate-700/40" : "",
+        isClickable ? "cursor-pointer active:bg-slate-700/40" : "cursor-default",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {/* Row 1: severity + incident ID + status */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <SeverityBadge severity={inc.severity} />
+          <span className="font-mono text-slate-200 text-sm truncate">
+            {inc.incidentId}
+          </span>
+        </div>
+        <StatusBadge status={inc.status} />
+      </div>
+
+      {/* Row 2: service + elapsed */}
+      <div className="mt-2.5 flex items-center justify-between gap-2">
+        <span className="font-mono text-xs bg-slate-700/60 border border-slate-600/40 text-slate-300 px-2 py-0.5 rounded">
+          {inc.service}
+        </span>
+        <span className="font-mono text-slate-500 text-xs tabular-nums">
+          {formatElapsed(inc.startedAt, now)}
+        </span>
+      </div>
+
+      {/* Tap hint for completed incidents */}
+      {isClickable && !isSelected && (
+        <p className="mt-2 text-xs text-slate-600">
+          Tap to view RCA report →
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ─── RCAPanel ─────────────────────────────────────────────────────────────────
 
 function RCAPanel({ incident, onClose }: { incident: Incident; onClose: () => void }) {
@@ -112,33 +171,39 @@ function RCAPanel({ incident, onClose }: { incident: Incident; onClose: () => vo
   return (
     <div className="mt-4 bg-slate-800/80 border border-slate-700/60 rounded-lg overflow-hidden animate-fade-in">
       {/* Panel header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/60 bg-slate-800">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-start justify-between gap-3 px-4 sm:px-6 py-4 border-b border-slate-700/60 bg-slate-800">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
           <SeverityBadge severity={incident.severity} />
-          <span className="text-slate-200 font-semibold text-sm">Root Cause Analysis</span>
-          <span className="text-slate-500">·</span>
-          <span className="font-mono text-slate-400 text-sm">{incident.incidentId}</span>
-          <span className="text-slate-500">·</span>
+          <span className="text-slate-200 font-semibold text-sm">
+            Root Cause Analysis
+          </span>
+          <span className="hidden sm:inline text-slate-500">·</span>
+          <span className="hidden sm:inline font-mono text-slate-400 text-sm">
+            {incident.incidentId}
+          </span>
+          <span className="hidden sm:inline text-slate-500">·</span>
           <span className="font-mono text-xs bg-slate-700/60 text-slate-300 px-2 py-0.5 rounded">
             {incident.service}
           </span>
         </div>
         <button
           onClick={onClose}
-          className="ml-4 text-slate-500 hover:text-slate-300 transition-colors text-base leading-none shrink-0"
+          className="text-slate-500 hover:text-slate-300 transition-colors text-base leading-none shrink-0 mt-0.5"
           aria-label="Close panel"
         >
           ✕
         </button>
       </div>
 
-      <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Root cause — full width */}
         <div className="lg:col-span-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
             Root Cause
           </p>
-          <p className="text-slate-200 leading-relaxed">{report.rootCause}</p>
+          <p className="text-slate-200 text-base sm:text-sm leading-relaxed">
+            {report.rootCause}
+          </p>
         </div>
 
         {/* Timeline */}
@@ -155,7 +220,9 @@ function RCAPanel({ incident, onClose }: { incident: Incident; onClose: () => vo
                     <div className="w-px flex-1 bg-slate-700 mt-1 mb-1" />
                   )}
                 </div>
-                <span className="text-slate-300 pb-3 leading-snug">{event}</span>
+                <span className="text-slate-300 text-base sm:text-sm pb-3 leading-snug">
+                  {event}
+                </span>
               </li>
             ))}
           </ol>
@@ -167,7 +234,7 @@ function RCAPanel({ incident, onClose }: { incident: Incident; onClose: () => vo
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
               Recommended Fix
             </p>
-            <div className="bg-emerald-500/10 border border-emerald-500/25 rounded-md px-4 py-3 text-emerald-300 text-sm leading-relaxed">
+            <div className="bg-emerald-500/10 border border-emerald-500/25 rounded-md px-4 py-3 text-emerald-300 text-base sm:text-sm leading-relaxed">
               {report.recommendedFix}
             </div>
           </div>
@@ -178,7 +245,7 @@ function RCAPanel({ incident, onClose }: { incident: Incident; onClose: () => vo
             </p>
             <ol className="space-y-2">
               {report.preventiveActions.map((action, i) => (
-                <li key={i} className="flex gap-2.5 text-sm text-slate-300">
+                <li key={i} className="flex gap-2.5 text-base sm:text-sm text-slate-300">
                   <span className="font-mono text-slate-500 shrink-0 w-4 text-right tabular-nums">
                     {i + 1}.
                   </span>
@@ -303,8 +370,8 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
       {/* ── Header ── */}
-      <header className="sticky top-0 z-10 border-b border-slate-700/60 bg-slate-900/95 backdrop-blur-sm px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <header className="sticky top-0 z-10 border-b border-slate-700/60 bg-slate-900/95 backdrop-blur-sm px-4 sm:px-6 py-4">
+        <div className="max-w-7xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-orange-500 text-xl leading-none">⚡</span>
@@ -323,7 +390,7 @@ export default function Page() {
           <button
             onClick={simulateIncident}
             disabled={isSimulating}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-orange-600 hover:bg-orange-500 active:bg-orange-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-md bg-orange-600 hover:bg-orange-500 active:bg-orange-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors w-full sm:w-auto"
           >
             {isSimulating ? (
               <>
@@ -341,7 +408,7 @@ export default function Page() {
       </header>
 
       {/* ── Main ── */}
-      <main className="max-w-7xl mx-auto px-6 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {/* Feed heading */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">
@@ -352,8 +419,47 @@ export default function Page() {
           </span>
         </div>
 
-        {/* Table */}
-        <div className="bg-slate-800/50 border border-slate-700/60 rounded-lg overflow-hidden">
+        {/* ── Mobile card list (< md) ── */}
+        <div className="md:hidden">
+          {incidents.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-16 text-slate-600">
+              <span className="text-4xl opacity-20">⚡</span>
+              <p className="text-sm text-center">
+                No incidents yet —{" "}
+                <button
+                  onClick={simulateIncident}
+                  className="text-slate-400 underline underline-offset-2"
+                >
+                  simulate one
+                </button>{" "}
+                to trigger a workflow
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {incidents.map((inc) => {
+                const isSelected = selectedId === inc.workflowId;
+                const isClickable = inc.status === "completed" && !!inc.result;
+                return (
+                  <IncidentCard
+                    key={inc.workflowId}
+                    inc={inc}
+                    isSelected={isSelected}
+                    now={now}
+                    onClick={
+                      isClickable
+                        ? () => setSelectedId(isSelected ? null : inc.workflowId)
+                        : undefined
+                    }
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Desktop table (≥ md) ── */}
+        <div className="hidden md:block bg-slate-800/50 border border-slate-700/60 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-700/60 bg-slate-800/80">
@@ -399,25 +505,18 @@ export default function Page() {
               ) : (
                 incidents.map((inc) => {
                   const isSelected = selectedId === inc.workflowId;
-                  const isClickable =
-                    inc.status === "completed" && !!inc.result;
-
+                  const isClickable = inc.status === "completed" && !!inc.result;
                   return (
                     <tr
                       key={inc.workflowId}
                       onClick={
                         isClickable
-                          ? () =>
-                              setSelectedId(
-                                isSelected ? null : inc.workflowId
-                              )
+                          ? () => setSelectedId(isSelected ? null : inc.workflowId)
                           : undefined
                       }
                       className={[
                         "animate-fade-in transition-colors duration-150",
-                        inc.status === "running"
-                          ? "bg-amber-500/[0.04]"
-                          : "",
+                        inc.status === "running" ? "bg-amber-500/[0.04]" : "",
                         isSelected
                           ? "bg-slate-700/40"
                           : isClickable
@@ -431,44 +530,35 @@ export default function Page() {
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <SeverityBadge severity={inc.severity} />
                       </td>
-
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className="font-mono text-slate-200 text-sm">
                           {inc.incidentId}
                         </span>
                       </td>
-
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className="font-mono text-xs bg-slate-700/60 border border-slate-600/40 text-slate-300 px-2 py-1 rounded">
                           {inc.service}
                         </span>
                       </td>
-
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className="font-mono text-slate-500 text-xs">
                           {inc.region}
                         </span>
                       </td>
-
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className="font-mono text-slate-200">
                           {inc.errorRate}
                         </span>
-                        <span className="text-slate-600 text-xs ml-1">
-                          req/s
-                        </span>
+                        <span className="text-slate-600 text-xs ml-1">req/s</span>
                       </td>
-
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <StatusBadge status={inc.status} />
                       </td>
-
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className="font-mono text-slate-500 text-xs">
                           {formatTime(inc.triggeredAt)}
                         </span>
                       </td>
-
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className="font-mono text-slate-500 text-xs tabular-nums">
                           {formatElapsed(inc.startedAt, now)}
@@ -483,13 +573,12 @@ export default function Page() {
         </div>
 
         {/* ── RCA detail panel ── */}
-        {selectedIncident?.status === "completed" &&
-          selectedIncident.result && (
-            <RCAPanel
-              incident={selectedIncident}
-              onClose={() => setSelectedId(null)}
-            />
-          )}
+        {selectedIncident?.status === "completed" && selectedIncident.result && (
+          <RCAPanel
+            incident={selectedIncident}
+            onClose={() => setSelectedId(null)}
+          />
+        )}
       </main>
     </div>
   );
