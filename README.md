@@ -20,7 +20,7 @@ No runbooks. No 3am log spelunking. Just answers.
 
 ## Demo
 
-https://github.com/h-artwani/flarevision/blob/main/flarevision-demo.mov
+https://flarevision-web-production.up.railway.app/
 
 ---
 
@@ -135,7 +135,7 @@ The Temporal UI at `localhost:8233` shows the full execution history, activity i
 - [x] End-to-end Temporal workflow running locally
 - [x] Next.js API routes
 - [x] React dashboard with live workflow visualizer
-- [x] Deployment to Temporal Cloud + Vercel + Fly.io
+- [x] Deployed to Temporal Cloud + Railway
 
 ---
 
